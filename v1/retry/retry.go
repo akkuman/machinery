@@ -7,6 +7,9 @@ import (
 	"github.com/RichardKnop/machinery/v1/log"
 )
 
+// MaxNextTryTime is the maximum time between attempts
+var MaxNextTryTime = 5. * time.Minute
+
 // Closure - a useful closure we can use when there is a problem
 // connecting to the broker. It uses Fibonacci sequence to space out retry attempts
 var Closure = func() func(chan int) {
@@ -16,6 +19,9 @@ var Closure = func() func(chan int) {
 		if retryIn > 0 {
 			durationString := fmt.Sprintf("%vs", retryIn)
 			duration, _ := time.ParseDuration(durationString)
+			if duration > MaxNextTryTime {
+				duration = MaxNextTryTime
+			}
 
 			log.WARNING.Printf("Retrying in %v seconds", retryIn)
 
