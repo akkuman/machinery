@@ -22,6 +22,7 @@ type Broker struct {
 	registeredTaskNames registeredTaskNames
 	retry               bool
 	retryFunc           func(chan int)
+	retryFuncGetter     func() func(chan int)
 	retryStopChan       chan int
 	stopChan            chan int
 }
@@ -49,6 +50,15 @@ func (b *Broker) GetRetry() bool {
 // GetRetryFunc ...
 func (b *Broker) GetRetryFunc() func(chan int) {
 	return b.retryFunc
+}
+
+func (b *Broker) SetRetryFunc(f func() func(chan int)) {
+	b.retryFuncGetter = f
+	b.retryFunc = f()
+}
+
+func (b *Broker) ResetRetry() {
+	b.retryFunc = b.retryFuncGetter()
 }
 
 // GetRetryStopChan ...
@@ -98,7 +108,7 @@ func (b *Broker) GetDelayedTasks() ([]*tasks.Signature, error) {
 // StartConsuming is a common part of StartConsuming method
 func (b *Broker) StartConsuming(consumerTag string, concurrency int, taskProcessor iface.TaskProcessor) {
 	if b.retryFunc == nil {
-		b.retryFunc = retry.Closure()
+		b.SetRetryFunc(retry.Closure)
 	}
 
 }

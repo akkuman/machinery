@@ -96,6 +96,8 @@ func (b *BrokerGR) StartConsuming(consumerTag string, concurrency int, taskProce
 		}
 		return b.GetRetry(), errs.ErrConsumerStopped
 	}
+	// reset retry after the connection succeeds
+	b.ResetRetry() 
 
 	// Channel to which we will push tasks ready for processing by worker
 	deliveries := make(chan []byte, concurrency)

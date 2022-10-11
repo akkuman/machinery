@@ -70,6 +70,8 @@ func (b *Broker) StartConsuming(consumerTag string, concurrency int, taskProcess
 		b.GetRetryFunc()(b.GetRetryStopChan())
 		return b.GetRetry(), err
 	}
+	// reset retry after the connection succeeds
+	b.ResetRetry() 
 	defer b.Close(channel, conn)
 
 	if err = channel.Qos(
